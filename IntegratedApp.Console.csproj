@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>IntegratedApp.Console</RootNamespace>
+    <AssemblyName>IntegratedApp</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LoginModule\LoginModule.csproj" />
+    <ProjectReference Include="..\DataProcessingModule\DataProcessingModule.csproj" />
+    <ProjectReference Include="..\ReportingModule\ReportingModule.csproj" />
+  </ItemGroup>
+
+</Project>

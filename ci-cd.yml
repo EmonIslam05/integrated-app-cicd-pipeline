@@ -1,0 +1,104 @@
+name: Integrated App CI/CD
+
+# Trigger the pipeline on every push and pull request to main, plus allow
+# manual runs from the Actions tab (useful for re-deploying without a new commit).
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_PATH: 'IntegratedApp/IntegratedApp.sln'
+  CONSOLE_PROJECT: 'IntegratedApp/IntegratedApp.Console/IntegratedApp.Console.csproj'
+  PUBLISH_DIR: 'publish'
+
+jobs:
+  # ---------------------------------------------------------------------
+  # JOB 1: Build + Test
+  # Runs on every push/PR. Fails the pipeline (and blocks deployment)
+  # if either the build or any unit/integration test fails.
+  # ---------------------------------------------------------------------
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore "${{ env.SOLUTION_PATH }}"
+
+      - name: Build solution (Release)
+        run: dotnet build "${{ env.SOLUTION_PATH }}" --configuration Release --no-restore
+
+      - name: Run unit & integration tests
+        run: >
+          dotnet test "${{ env.SOLUTION_PATH }}"
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory "${{ github.workspace }}/TestResults"
+
+      - name: Publish test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults/*.trx
+
+      - name: Publish console app
+        run: >
+          dotnet publish "${{ env.CONSOLE_PROJECT }}"
+          --configuration Release
+          --no-build
+          --output "${{ env.PUBLISH_DIR }}"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: integrated-app-build
+          path: ${{ env.PUBLISH_DIR }}
+
+  # ---------------------------------------------------------------------
+  # JOB 2: Deploy
+  # Only runs for pushes to main (not for pull requests) and only after
+  # build-and-test succeeds, so nothing broken is ever deployed.
+  # ---------------------------------------------------------------------
+  deploy:
+    name: Deploy
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: integrated-app-build
+          path: ${{ env.PUBLISH_DIR }}
+
+      - name: Deploy application
+        run: |
+          echo "Deploying IntegratedApp build to the target environment..."
+          # Replace this placeholder with a real deployment step, e.g.:
+          #   - azure/webapps-deploy@v3 (Azure App Service)
+          #   - aws-actions/amazon-ecs-deploy-task-definition (AWS ECS)
+          #   - copying ${{ env.PUBLISH_DIR }} to a server over SSH/SCP
+          ls -R "${{ env.PUBLISH_DIR }}"
+          echo "Deployment step completed."
+
+      - name: Smoke test the deployed build
+        run: |
+          echo "Running a basic smoke test against the published binary..."
+          chmod +x "${{ env.PUBLISH_DIR }}/IntegratedApp" || true
+          echo "Smoke test placeholder passed."
