@@ -394,15 +394,6 @@ The detailed project report contains information about:
 
 ---
 
-## ⭐ Conclusion
-
-This project demonstrates the integration of multiple C# modules into a single console application while applying modern software development practices.
-
-By combining **modular architecture, automated testing, GitHub Actions, Continuous Integration, and Continuous Deployment**, the project provides a practical demonstration of a complete software development and delivery workflow.
-
-
-
-
 # Integrated App — CI/CD Pipeline Simulation
 
 A small C# solution that integrates three modules — **Login**, **Data
@@ -443,6 +434,12 @@ The workflow in `.github/workflows/ci-cd.yml` has two jobs:
 2. **deploy** — runs only on pushes to `main`, and only if `build-and-test`
    passed, downloading the artifact and deploying it (placeholder step —
    swap in a real target such as Azure App Service, AWS, or SSH/SCP).
+
+## ⭐ Conclusion
+
+This project demonstrates the integration of multiple C# modules into a single console application while applying modern software development practices.
+
+By combining **modular architecture, automated testing, GitHub Actions, Continuous Integration, and Continuous Deployment**, the project provides a practical demonstration of a complete software development and delivery workflow.
 
 See `Integration_and_CICD_Report.docx` for the full write-up of the
 integration approach, pipeline design, and challenges encountered.
